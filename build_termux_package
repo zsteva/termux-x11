@@ -30,6 +30,7 @@ mkdir -p $PREFIX/libexec/termux-x11
 mkdir -p "$(dirname $DEB_PACKAGE_PATH)"
 
 cp termux-x11 $PREFIX/bin/
+cp startx $PREFIX/bin/
 cp shell-loader/build/outputs/apk/debug/shell-loader-debug.apk \
 	$PREFIX/libexec/termux-x11/loader.apk
 

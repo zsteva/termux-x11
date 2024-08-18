@@ -74,6 +74,12 @@
                 android:minHeight="10dp" />
 
             <Button
+                android:id="@+id/startx_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/startx_button_text" />
+
+            <Button
                 android:id="@+id/help_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
