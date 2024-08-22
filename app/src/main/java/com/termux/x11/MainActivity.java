@@ -167,25 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         findViewById(R.id.help_button).setOnClickListener((l) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/termux/termux-x11/blob/master/README.md#running-graphical-applications"))));
         findViewById(R.id.exit_button).setOnClickListener((l) -> finish());
 
-        findViewById(R.id.startx_button).setOnClickListener((l) -> {
-
-            if (checkSelfPermission(PERMISSION_RUN_COMMAND) != PERMISSION_GRANTED) {
-                requestPermissions(new String[] { PERMISSION_RUN_COMMAND }, 0);
-            } else {
-                Intent intent = new Intent();
-
-                intent.setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE_NAME);
-                intent.setAction(RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND);
-                intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, "/data/data/com.termux/files/usr/bin/bash");
-                intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, new String[]{"-l", "-c", "startx"});
-                intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR, "/data/data/com.termux/files/home");
-                intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, true);
-                intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION, "0");
-
-                startService(intent);
-            }
-
-        });
+        findViewById(R.id.startx_button).setOnClickListener((l) -> runStartX());
 
         LorieView lorieView = findViewById(R.id.lorieView);
         View lorieParent = (View) lorieView.getParent();
@@ -927,5 +909,45 @@ public class MainActivity extends AppCompatActivity implements View.OnApplyWindo
         if (connected && !showIMEWhileExternalConnected)
             inputMethodManager.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
         getLorieView().requestFocus();
+    }
+
+    public static final int PERMISSION_REQUEST_RUN_START_X = 1;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == PERMISSION_REQUEST_RUN_START_X) {
+            if (grantResults[0] != PERMISSION_GRANTED) {
+                return;
+            }
+
+            runStartX();
+        }
+
+    }
+
+    protected void runStartX() {
+
+        if (checkSelfPermission(PERMISSION_RUN_COMMAND) != PERMISSION_GRANTED) {
+            requestPermissions(new String[] { PERMISSION_RUN_COMMAND }, PERMISSION_REQUEST_RUN_START_X);
+            return;
+        }
+
+        Intent intent = new Intent();
+
+        intent.setClassName(TermuxConstants.TERMUX_PACKAGE_NAME, TermuxConstants.TERMUX_APP.RUN_COMMAND_SERVICE_NAME);
+        intent.setAction(RUN_COMMAND_SERVICE.ACTION_RUN_COMMAND);
+        intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_COMMAND_PATH, "/data/data/com.termux/files/usr/bin/bash");
+        intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_ARGUMENTS, new String[]{"-l", "-c", "startx"});
+        intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_WORKDIR, "/data/data/com.termux/files/home");
+        intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_BACKGROUND, true);
+        intent.putExtra(RUN_COMMAND_SERVICE.EXTRA_SESSION_ACTION, "0");
+
+        if (SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
+
     }
 }
